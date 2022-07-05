@@ -1,0 +1,1 @@
+This is a project about how i predict the success of an upcoming movie. This is my business intelligence project.
