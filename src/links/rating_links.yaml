@@ -1,0 +1,3 @@
+rating-list: [
+  'https://www.imdb.com/user/{}/ratings?lastPosition={}'
+]

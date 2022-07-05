@@ -1,0 +1,60 @@
+comedy: [
+  'https://www.imdb.com/search/title/?genres=comedy&start={}&explore=title_type,genres&ref_=adv_prv'
+]
+
+sci-fi: [
+  'https://www.imdb.com/search/title/?genres=sci-fi&start={}&explore=title_type,genres&ref_=adv_nxt'
+]
+
+horror: [
+  'https://www.imdb.com/search/title/?genres=horror&start={}&explore=title_type,genres&ref_=adv_nxt'
+]
+
+romance: [
+  'https://www.imdb.com/search/title/?genres=romance&start={}&explore=title_type,genres&ref_=adv_nxt'
+]
+
+action: [
+  'https://www.imdb.com/search/title/?genres=action&start={}&explore=title_type,genres&ref_=adv_nxt'
+]
+
+thriller: [
+  'https://www.imdb.com/search/title/?genres=thriller&start={}&explore=title_type,genres&ref_=adv_nxt'
+]
+
+drama: [
+  'https://www.imdb.com/search/title/?genres=drama&start={}&explore=title_type,genres&ref_=adv_nxt'
+]
+
+romance: [
+  'https://www.imdb.com/search/title/?genres=romance&start={}&explore=title_type,genres&ref_=adv_nxt'
+]
+
+mystery: [
+  'https://www.imdb.com/search/title/?genres=mystery&start={}&explore=title_type,genres&ref_=adv_nxt'
+]
+
+crime: [
+  'https://www.imdb.com/search/title/?genres=crime&start={}&explore=title_type,genres&ref_=adv_nxt'
+]
+
+animation: [
+  'https://www.imdb.com/search/title/?genres=animation&start={}&explore=title_type,genres&ref_=adv_nxt'
+]
+
+adventure: [
+  'https://www.imdb.com/search/title/?genres=adventure&start={}&explore=title_type,genres&ref_=adv_nxt'
+]
+
+fantasy: [
+  'https://www.imdb.com/search/title/?genres=fantasy&start={}&explore=title_type,genres&ref_=adv_nxt'
+]
+
+comedy-romance: [
+  'https://www.imdb.com/search/title/?genres=comedy,romance&start={}&explore=title_type,genres&ref_=adv_nxt'
+]
+
+action-comedy: [
+  'https://www.imdb.com/search/title/?genres=action,comedy&start={}&explore=title_type,genres&ref_=adv_nxt'
+]
+
