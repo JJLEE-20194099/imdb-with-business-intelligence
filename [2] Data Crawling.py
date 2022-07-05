@@ -4,8 +4,22 @@ from src.yaml_utils import read_yaml
 from src.url_functions import get_all_movie_ids_from_genre, get_user_id_list_rating_a_movie, get_detail_movie_by_movie_id, get_all_ratings_by_user, get_rating_list_in_a_movie, get_detail_movie_by_movie_id
 
 
+if os.path.exists('./data'):
+    os.makedirs('./data')
+
+if os.path.exists('./data/crawl_data/'):
+    os.makedirs('./data/crawl_data/')
+
 ID_OUTPUT = 'data/crawl_data/movie_id'
-os.makedirs(ID_OUTPUT, exist_ok=False)
+
+if os.path.exists(ID_OUTPUT):
+    os.makedirs(ID_OUTPUT)
+
+if os.path.exists('./data/datasets/'):
+    os.makedirs('./data/datasets/')
+
+if os.path.exists('./data/datasets/movie'):
+    os.makedirs('./data/datasets/movie')
 
 MOVIE_IDS_PATH = './data/datasets/movie/ids.txt'
 
@@ -56,13 +70,13 @@ def crawl_movie_details():
     movie_id_file = [movie_id.strip() for movie_id in movie_id_file]
     movie_detail_path = os.path.join('data/datasets/movie', 'details.csv')
     
-    detail_title = ["movie id", "title", "series", "release year", "certification", "duration", "average rating", "rating total", "genre list", "content", "countries of origin", "official sites", "languages", "production companies", "budget"]
+    detail_title = ["movie id", "title", "series", "release year", "certification", "duration", "average rating", "rating total", "popularity score", "popularity delta", "content", "numOfUserReviews", "numOfCriticReviews", "metaScore", "star_url_list", "countries_of_origin", "official_sites", "languages", "filming_locations", "production_companies", "budget_list"]
     write_csv_file([detail_title], movie_detail_path, 'w')
 
     for movie_id in movie_id_file:
         write_csv_file([get_detail_movie_by_movie_id(movie_id)], movie_detail_path, 'a')
                 
-# crawl_movie_details()
+crawl_movie_details()
 # --------------------------------------------------------------------
 
 # 4. Crawl user ids by finding user ids appear in rating box

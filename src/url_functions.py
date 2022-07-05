@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
 import requests
-from src.exception_utils import get_text, get_href, get_value_by_idx_list, get_a_children_by_find, get_a_children_by_find_class, get_childrens_by_find, get_childrens_by_find_class, get_len
+from src.exception_utils import get_text, get_href, get_value_by_idx_list, get_a_children_by_find, get_a_children_by_find_class, get_childrens_by_find, get_childrens_by_find_class, get_len, get_childrens_by_find_no_recursive
 
 def get_content_(url):
     """
@@ -176,11 +176,10 @@ def get_detail_movie_by_movie_id(movie_id):
         detail_url = "https://www.imdb.com/title/{}/".format(movie_id)
         raw_content = get_content_(detail_url)
         soup = BeautifulSoup(raw_content, features="lxml")
-        title_block_container =  get_a_children_by_find_class(soup, "div", "TitleBlock__Container-sc-1nlhx7j-0")
-        title = ""
-        title = get_text(get_a_children_by_find_class(title_block_container, "h1", "TitleHeader__TitleText-sc-1wu6n3d-0"))
 
-        title_metadata_container =  get_a_children_by_find_class(title_block_container, "div", "TitleBlock__TitleMetaDataContainer-sc-1nlhx7j-2")
+        title = get_text(soup.select_one('h1[data-testid="hero-title-block__title"]'))
+
+        title_metadata_container = soup.select_one('ul[data-testid="hero-title-block__metadata"]')
         presentations =  get_childrens_by_find(title_metadata_container, "li")
         series = ""
         release_year = ""
@@ -189,7 +188,6 @@ def get_detail_movie_by_movie_id(movie_id):
         
         if get_len(presentations) == 4:
             series = presentations[0].get_text()
-            
             release_year = get_text(get_a_children_by_find(presentations[1], "span"))
             certification = get_text(get_a_children_by_find(presentations[2], "span"))
             duration = get_text(presentations[3])
@@ -203,38 +201,59 @@ def get_detail_movie_by_movie_id(movie_id):
     
             if (get_len(presentations) > 2):
                 duration = get_text(presentations[2])
-    
-        
+
+        average_rating_block_container = soup.select_one('div[data-testid="hero-rating-bar__aggregate-rating"]')
         average_rating = ""
-        average_rating = get_text( get_a_children_by_find_class(title_block_container, "span", "AggregateRatingButton__RatingScore-sc-1ll29m0-1"))
-        
+        average_rating = get_text(get_a_children_by_find_class(average_rating_block_container, "span", "sc-7ab21ed2-1 jGRxWM"))
         total_rating = ""
-        get_a_children_by_find_class(title_block_container, "div", "AggregateRatingButton__TotalRatingAmount-sc-1ll29m0-3")
-        total_rating = get_text(get_a_children_by_find_class(title_block_container, "div", "AggregateRatingButton__TotalRatingAmount-sc-1ll29m0-3"))
+        total_rating = get_text(get_a_children_by_find_class(average_rating_block_container, "div", "sc-7ab21ed2-3 dPVcnq"))
+
+        popularity_block_container = soup.select_one('div[data-testid="hero-rating-bar__popularity"]')
+
+        popularity_score = get_text(soup.select_one('div[data-testid="hero-rating-bar__popularity__score"]'))
+        popularity_delta = get_text(soup.select_one('div[data-testid="hero-rating-bar__popularity__delta"]'))
+        
 
         
-        about_movie_container = get_a_children_by_find_class(soup, "div", "Hero__ContentContainer-kvkd64-10")
-        
-        genres_and_plot_content = get_a_children_by_find_class(about_movie_container, "div", "GenresAndPlot__ContentParent-cum89p-8")
-        
-        genres_box = get_childrens_by_find(genres_and_plot_content, "a")
+        genres_and_plot_content = soup.select_one('div[data-testid="genres"]')
+        genres_box = get_childrens_by_find(get_value_by_idx_list(get_childrens_by_find(genres_and_plot_content, "div"), 1), "a")
         genre_list = []
         plot_content = ""
 
-        plot_content = get_text(get_a_children_by_find_class(genres_and_plot_content, "span", "GenresAndPlot__TextContainerBreakpointL-cum89p-1"))
+        plot_content = get_text(soup.select_one('div[data-testid="plot"]'))
         if genres_box:
             for genre_box in genres_box:
-                genre_title = get_text(get_a_children_by_find(genre_box, "span"))
+                genre_title = get_text(genre_box)
                 if genre_title:
                     genre_list.append(genre_title)
 
+
+        overall_review_info_container = soup.select_one('ul[data-testid="reviewContent-all-reviews"]')
+        numOfUserReviews = get_text(get_a_children_by_find_class(get_value_by_idx_list(overall_review_info_container, 0), "span", "score"))
+        numOfCriticReviews = get_text(get_a_children_by_find_class(get_value_by_idx_list(overall_review_info_container, 1), "span", "score"))
+        metaScore = get_text(get_a_children_by_find_class(get_value_by_idx_list(overall_review_info_container, 2), "span", "score"))
+
+        role_container_box = soup.select_one('div[data-testid="title-pc-wide-screen"]')
+        role_container_list_box = get_childrens_by_find_no_recursive(get_childrens_by_find_no_recursive(role_container_box, "ul"), "li")
         
-        storyline_wrapper = get_a_children_by_find_class(soup, "div", "Storyline__StorylineWrapper-sc-1b58ttw-0")
-        storyline_content = get_text(get_a_children_by_find(storyline_wrapper, "div"))
+        star_container_box = get_childrens_by_find(get_a_children_by_find(get_value_by_idx_list(role_container_list_box, -1), "ul"), "li")
+        star_url_list = []
+
+        if star_container_box:
+            for star_box in star_container_box:
+                star_url = get_value_by_idx_list(get_childrens_by_find(star_box, "a"), "href")
+                star_url_list.append(star_url)
+        
+        
+        storyline_content = get_text(soup.select_one('section[data-testid="storyline-plot-summary"]'))
+
+        detail_container_box = get_a_children_by_find(soup.select_one('div[data-testid="title-details-section"]'), "ul")
+
 
         countries_of_origin = []
         official_sites = []
         languages = []
+        filming_locations = []
         production_companies = []
         budget = ""
         
@@ -243,16 +262,14 @@ def get_detail_movie_by_movie_id(movie_id):
         countries = get_childrens_by_find(countries_of_origin_container, "a")
         if countries:
             for country in countries:
-                if country:
-                    countries_of_origin.append(get_text(country))
+                countries_of_origin.append(get_text(country))
         
-        official_sites_container = soup.select_one('li[data-testid="title-details-officialsites"]')
+        official_sites_container = soup.select_one('li[data-testid="details-officialsites"]')
 
         sites = get_childrens_by_find(official_sites_container, "a")
         if sites:
-            for site in sites:
-                if site:
-                    official_sites.append(get_text(site))
+            for site in sites:  
+                official_sites.append(get_text(site))
         
         languages_container = soup.select_one('li[data-testid="title-details-languages"]')
 
@@ -260,23 +277,34 @@ def get_detail_movie_by_movie_id(movie_id):
         
         if langs:
             for lang in langs:
-                if lang:
-                    languages.append(get_text(lang))   
+                languages.append(get_text(lang))   
+
+        filming_location_container = soup.select_one('li[data-testid="title-details-filminglocations"]')
+
+        locations = get_childrens_by_find(filming_location_container, "a")
+        
+        if locations:
+            for location in locations:
+                filming_locations.append(get_text(location))   
 
         companies_container = soup.select_one('li[data-testid="title-details-companies"]')
 
         companies = get_childrens_by_find(companies_container, "a")
         if companies:
             for company in companies:
-                if (production_companies):
-                    production_companies.append(company.get_text())
-        budgets = get_childrens_by_find(get_a_children_by_find_class(soup, "ul", "BoxOffice__MetaDataListBoxOffice-sc-40s2pl-0"), "li")
-        budget = get_text(get_value_by_idx_list(budgets, -1))
-                
+                production_companies.append(get_text(company))
         
-        content = plot_content + ' ' + storyline_content
+        budgets = get_childrens_by_find(get_a_children_by_find(soup.select_one('li[data-testid="title-boxoffice-budget"]'), "ul"), "li")
 
-        return [movie_id, title, series, release_year, certification, duration, average_rating, total_rating, "|".join(genre_list), content, "|".join(countries_of_origin), "|".join(official_sites), "|".join(languages), "|".join(production_companies), budget]
+        budget_list = []
+        if budgets:
+            for budget in budgets:
+                budget = get_text(budget)
+                budget_list.append(budget)
+
+        content = plot_content + ' ' + storyline_content
+        return [movie_id, title, series, release_year, certification, duration, average_rating, total_rating, popularity_score, popularity_delta, content, numOfUserReviews, numOfCriticReviews, metaScore, "|".join(star_url_list), "|".join(countries_of_origin), "|".join(official_sites), "|".join(languages), "|".join(filming_locations), "|".join(production_companies), "|".join(budget_list)]
+
     except Exception:
         return None
 

@@ -35,9 +35,17 @@ def get_a_children_by_find_class(element, children_name, class_name):
         return None
 
 
+
 def get_childrens_by_find(element, children_name):
     try:
         return element.find_all(children_name)
+    except Exception:
+        return None
+    
+def get_childrens_by_find_no_recursive(element, children_name):
+    try:
+        return element.find_all(children_name, recursive=False)
+
     except Exception:
         return None
 
