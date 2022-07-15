@@ -44,7 +44,7 @@ def get_all_film_links_from_a_imdb_another_url(url):
 def generate_imdb_genre_links_from_base_genre_url(url, pagination_idx):
     genre_links = []
     current_start = 1
-    for i in range(30):
+    for i in range(800):
         genre_links.append(url.format(current_start))
         current_start += pagination_idx
     return genre_links
@@ -178,14 +178,12 @@ def get_detail_movie_by_movie_id(movie_id):
         soup = BeautifulSoup(raw_content, features="lxml")
 
         title = get_text(soup.select_one('h1[data-testid="hero-title-block__title"]'))
-
         title_metadata_container = soup.select_one('ul[data-testid="hero-title-block__metadata"]')
         presentations =  get_childrens_by_find(title_metadata_container, "li")
         series = ""
         release_year = ""
         certification = ""
         duration = ""
-        
         if get_len(presentations) == 4:
             series = presentations[0].get_text()
             release_year = get_text(get_a_children_by_find(presentations[1], "span"))
@@ -208,10 +206,10 @@ def get_detail_movie_by_movie_id(movie_id):
         total_rating = ""
         total_rating = get_text(get_a_children_by_find_class(average_rating_block_container, "div", "sc-7ab21ed2-3 dPVcnq"))
 
-        popularity_block_container = soup.select_one('div[data-testid="hero-rating-bar__popularity"]')
 
         popularity_score = get_text(soup.select_one('div[data-testid="hero-rating-bar__popularity__score"]'))
         popularity_delta = get_text(soup.select_one('div[data-testid="hero-rating-bar__popularity__delta"]'))
+        
         
 
         
@@ -220,35 +218,31 @@ def get_detail_movie_by_movie_id(movie_id):
         genre_list = []
         plot_content = ""
 
-        plot_content = get_text(soup.select_one('div[data-testid="plot"]'))
+        plot_content = get_text(soup.select_one('span[data-testid="plot-l"]'))
+
         if genres_box:
             for genre_box in genres_box:
                 genre_title = get_text(genre_box)
                 if genre_title:
                     genre_list.append(genre_title)
 
-
-        overall_review_info_container = soup.select_one('ul[data-testid="reviewContent-all-reviews"]')
+        overall_review_info_container = get_childrens_by_find(soup.select_one('ul[data-testid="reviewContent-all-reviews"]'), "li")
         numOfUserReviews = get_text(get_a_children_by_find_class(get_value_by_idx_list(overall_review_info_container, 0), "span", "score"))
         numOfCriticReviews = get_text(get_a_children_by_find_class(get_value_by_idx_list(overall_review_info_container, 1), "span", "score"))
         metaScore = get_text(get_a_children_by_find_class(get_value_by_idx_list(overall_review_info_container, 2), "span", "score"))
 
         role_container_box = soup.select_one('div[data-testid="title-pc-wide-screen"]')
-        role_container_list_box = get_childrens_by_find_no_recursive(get_childrens_by_find_no_recursive(role_container_box, "ul"), "li")
-        
+        try:
+            role_container_list_box = get_a_children_by_find(role_container_box, "ul").find_all(recursive=False)
+        except: 
+            role_container_list_box = None
         star_container_box = get_childrens_by_find(get_a_children_by_find(get_value_by_idx_list(role_container_list_box, -1), "ul"), "li")
         star_url_list = []
 
         if star_container_box:
             for star_box in star_container_box:
-                star_url = get_value_by_idx_list(get_childrens_by_find(star_box, "a"), "href")
+                star_url = get_value_by_idx_list(get_a_children_by_find(star_box, "a"), "href")
                 star_url_list.append(star_url)
-        
-        
-        storyline_content = get_text(soup.select_one('section[data-testid="storyline-plot-summary"]'))
-
-        detail_container_box = get_a_children_by_find(soup.select_one('div[data-testid="title-details-section"]'), "ul")
-
 
         countries_of_origin = []
         official_sites = []
@@ -258,7 +252,6 @@ def get_detail_movie_by_movie_id(movie_id):
         budget = ""
         
         countries_of_origin_container = soup.select_one('li[data-testid="title-details-origin"]')
-
         countries = get_childrens_by_find(countries_of_origin_container, "a")
         if countries:
             for country in countries:
@@ -272,7 +265,7 @@ def get_detail_movie_by_movie_id(movie_id):
                 official_sites.append(get_text(site))
         
         languages_container = soup.select_one('li[data-testid="title-details-languages"]')
-
+        
         langs = get_childrens_by_find(languages_container, "a")
         
         if langs:
@@ -282,11 +275,9 @@ def get_detail_movie_by_movie_id(movie_id):
         filming_location_container = soup.select_one('li[data-testid="title-details-filminglocations"]')
 
         locations = get_childrens_by_find(filming_location_container, "a")
-        
         if locations:
             for location in locations:
                 filming_locations.append(get_text(location))   
-
         companies_container = soup.select_one('li[data-testid="title-details-companies"]')
 
         companies = get_childrens_by_find(companies_container, "a")
@@ -295,6 +286,7 @@ def get_detail_movie_by_movie_id(movie_id):
                 production_companies.append(get_text(company))
         
         budgets = get_childrens_by_find(get_a_children_by_find(soup.select_one('li[data-testid="title-boxoffice-budget"]'), "ul"), "li")
+        # print(title, budgets, detail_url)
 
         budget_list = []
         if budgets:
@@ -302,8 +294,7 @@ def get_detail_movie_by_movie_id(movie_id):
                 budget = get_text(budget)
                 budget_list.append(budget)
 
-        content = plot_content + ' ' + storyline_content
-        return [movie_id, title, series, release_year, certification, duration, average_rating, total_rating, popularity_score, popularity_delta, content, numOfUserReviews, numOfCriticReviews, metaScore, "|".join(star_url_list), "|".join(countries_of_origin), "|".join(official_sites), "|".join(languages), "|".join(filming_locations), "|".join(production_companies), "|".join(budget_list)]
+        return [movie_id, title, series, release_year, certification, duration, average_rating, total_rating, popularity_score, popularity_delta, plot_content, numOfUserReviews, numOfCriticReviews, metaScore, "|".join(star_url_list), "|".join(countries_of_origin), "|".join(official_sites), "|".join(languages), "|".join(filming_locations), "|".join(production_companies), "|".join(budget_list)]
 
     except Exception:
         return None

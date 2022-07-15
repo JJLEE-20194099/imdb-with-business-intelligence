@@ -2,23 +2,23 @@ import os
 from src.text_csv_utils import write_csv_file, read_text_file
 from src.yaml_utils import read_yaml
 from src.url_functions import get_all_movie_ids_from_genre, get_user_id_list_rating_a_movie, get_detail_movie_by_movie_id, get_all_ratings_by_user, get_rating_list_in_a_movie, get_detail_movie_by_movie_id
+from tqdm import tqdm
 
-
-if os.path.exists('./data'):
+if os.path.exists('./data') == False:
     os.makedirs('./data')
 
-if os.path.exists('./data/crawl_data/'):
+if os.path.exists('./data/crawl_data/') == False:
     os.makedirs('./data/crawl_data/')
 
 ID_OUTPUT = 'data/crawl_data/movie_id'
 
-if os.path.exists(ID_OUTPUT):
+if os.path.exists(ID_OUTPUT) == False:
     os.makedirs(ID_OUTPUT)
 
-if os.path.exists('./data/datasets/'):
+if os.path.exists('./data/datasets/') == False:
     os.makedirs('./data/datasets/')
 
-if os.path.exists('./data/datasets/movie'):
+if os.path.exists('./data/datasets/movie') == False:
     os.makedirs('./data/datasets/movie')
 
 MOVIE_IDS_PATH = './data/datasets/movie/ids.txt'
@@ -27,10 +27,11 @@ MOVIE_IDS_PATH = './data/datasets/movie/ids.txt'
 def crawl_movie_ids():
 
     links = read_yaml("./src/links/genre_links.yaml")
-    for genre, links in links.items():
+    for genre, links in tqdm(links.items()):
 
         genre_dir = os.path.join(ID_OUTPUT, genre)
-        os.makedirs(genre_dir, exist_ok=False)
+        if os.path.exists(genre_dir) == False:
+            os.makedirs(genre_dir)
 
         item_id_list_path = os.path.join(genre_dir, 'id_list.txt')
         item_id_list = get_all_movie_ids_from_genre(links)
@@ -51,11 +52,14 @@ def combine_movie_ids_from_category_dir():
         item_id_list_path = os.path.join(genre_dir, 'id_list.txt')
         id_file = open(item_id_list_path, 'r')
         ids = id_file.readlines()
+        print(len(ids))
         for id in ids:
             distinct_movie_ids.add(id.strip())
     
     distinct_movie_ids = list(distinct_movie_ids)
     distinct_movie_ids = [[movie_id] for movie_id in distinct_movie_ids]
+    print(len(distinct_movie_ids))
+
 
     movie_ids_path = os.path.join('data/datasets/movie/', 'ids.txt')
     write_csv_file(distinct_movie_ids, movie_ids_path, 'w')
@@ -73,7 +77,7 @@ def crawl_movie_details():
     detail_title = ["movie id", "title", "series", "release year", "certification", "duration", "average rating", "rating total", "popularity score", "popularity delta", "content", "numOfUserReviews", "numOfCriticReviews", "metaScore", "star_url_list", "countries_of_origin", "official_sites", "languages", "filming_locations", "production_companies", "budget_list"]
     write_csv_file([detail_title], movie_detail_path, 'w')
 
-    for movie_id in movie_id_file:
+    for movie_id in tqdm(movie_id_file):
         write_csv_file([get_detail_movie_by_movie_id(movie_id)], movie_detail_path, 'a')
                 
 crawl_movie_details()
